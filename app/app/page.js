@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
 export default function Home() {
@@ -8,6 +8,12 @@ export default function Home() {
   const [jumlah, setJumlah] = useState("");
   const [tipe, setTipe] = useState("masuk");
   const [keterangan, setKeterangan] = useState("");
+
+  // Ambil data dari localStorage
+  useEffect(() => {
+    const data = JSON.parse(localStorage.getItem("kas-data")) || [];
+    setTransaksi(data);
+  }, []);
 
   const tambah = () => {
     if (!nama || !jumlah) return;
@@ -20,7 +26,11 @@ export default function Home() {
       tanggal: new Date().toLocaleString()
     };
 
-    setTransaksi([data, ...transaksi]);
+    const newData = [data, ...transaksi];
+
+    setTransaksi(newData);
+    localStorage.setItem("kas-data", JSON.stringify(newData));
+
     setNama("");
     setJumlah("");
     setKeterangan("");
@@ -35,6 +45,145 @@ export default function Home() {
   const totalMasuk = transaksi
     .filter(t => t.tipe === "masuk")
     .reduce((a, b) => a + b.jumlah, 0);
+
+  const totalKeluar = transaksi
+    .filter(t => t.tipe === "keluar")
+    .reduce((a, b) => a + b.jumlah, 0);
+
+  return (
+    <div style={container}>
+      <h1 style={{ textAlign: "center" }}>💰 Kas Kelompok</h1>
+
+      <div style={{ textAlign: "center" }}>
+        <Link href="/laporan">
+          <button style={navButton}>📊 Laporan</button>
+        </Link>
+      </div>
+
+      {/* Dashboard */}
+      <div style={dashboard}>
+        <Box title="Saldo" value={saldo} color="#22c55e" />
+        <Box title="Masuk" value={totalMasuk} color="#3b82f6" />
+        <Box title="Keluar" value={totalKeluar} color="#ef4444" />
+      </div>
+
+      {/* Form */}
+      <div style={card}>
+        <h3>Tambah Transaksi</h3>
+
+        <input style={input} placeholder="Nama" value={nama}
+          onChange={e => setNama(e.target.value)} />
+
+        <input style={input} type="number" placeholder="Jumlah"
+          value={jumlah} onChange={e => setJumlah(e.target.value)} />
+
+        <input style={input} placeholder="Keterangan"
+          value={keterangan} onChange={e => setKeterangan(e.target.value)} />
+
+        <select style={input} value={tipe}
+          onChange={e => setTipe(e.target.value)}>
+          <option value="masuk">Pemasukan</option>
+          <option value="keluar">Pengeluaran</option>
+        </select>
+
+        <button style={button} onClick={tambah}>
+          Tambah
+        </button>
+      </div>
+
+      {/* Riwayat */}
+      <div style={card}>
+        <h3>📜 Riwayat</h3>
+
+        {transaksi.map((t, i) => (
+          <div key={i} style={item}>
+            <b>{t.nama}</b> - 
+            <span style={{
+              color: t.tipe === "masuk" ? "#22c55e" : "#ef4444"
+            }}>
+              {" "}{t.tipe}
+            </span>
+            <br />
+            Rp {t.jumlah}
+            <br />
+            <small>{t.keterangan}</small>
+            <br />
+            <small>{t.tanggal}</small>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Box({ title, value, color }) {
+  return (
+    <div style={{
+      flex: 1,
+      background: "#1e293b",
+      padding: 15,
+      borderRadius: 12,
+      borderLeft: `5px solid ${color}`
+    }}>
+      <p>{title}</p>
+      <h2>Rp {value}</h2>
+    </div>
+  );
+}
+
+/* STYLE */
+const container = {
+  minHeight: "100vh",
+  background: "#0f172a",
+  color: "white",
+  padding: 20
+};
+
+const dashboard = {
+  display: "flex",
+  gap: 10,
+  marginTop: 20,
+  flexWrap: "wrap"
+};
+
+const card = {
+  marginTop: 20,
+  background: "#1e293b",
+  padding: 20,
+  borderRadius: 12
+};
+
+const input = {
+  width: "100%",
+  padding: 10,
+  marginBottom: 10,
+  borderRadius: 8,
+  border: "none"
+};
+
+const button = {
+  width: "100%",
+  padding: 12,
+  background: "#22c55e",
+  border: "none",
+  borderRadius: 8,
+  color: "white"
+};
+
+const navButton = {
+  padding: 10,
+  background: "#3b82f6",
+  border: "none",
+  borderRadius: 8,
+  color: "white"
+};
+
+const item = {
+  padding: 10,
+  marginBottom: 10,
+  background: "#1e293b",
+  borderRadius: 10
+};    .reduce((a, b) => a + b.jumlah, 0);
 
   const totalKeluar = transaksi
     .filter(t => t.tipe === "keluar")
