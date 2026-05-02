@@ -1,40 +1,59 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
-export default function Home() {
+export default function Laporan() {
   const [transaksi, setTransaksi] = useState([]);
-  const [nama, setNama] = useState("");
-  const [jumlah, setJumlah] = useState("");
-  const [tipe, setTipe] = useState("masuk");
-  const [keterangan, setKeterangan] = useState("");
 
-  const tambah = () => {
-    if (!nama || !jumlah) return;
+  useEffect(() => {
+    const data = JSON.parse(localStorage.getItem("kas-data")) || [];
+    setTransaksi(data);
+  }, []);
 
-    const data = {
-      nama,
-      jumlah: Number(jumlah),
-      tipe,
-      keterangan,
-      tanggal: new Date().toLocaleString()
-    };
+  const pemasukan = transaksi.filter(t => t.tipe === "masuk");
+  const pengeluaran = transaksi.filter(t => t.tipe === "keluar");
 
-    setTransaksi([data, ...transaksi]);
-    setNama("");
-    setJumlah("");
-    setKeterangan("");
-  };
+  const totalMasuk = pemasukan.reduce((a, b) => a + b.jumlah, 0);
+  const totalKeluar = pengeluaran.reduce((a, b) => a + b.jumlah, 0);
 
-  const saldo = transaksi.reduce((acc, t) => {
-    return t.tipe === "masuk"
-      ? acc + t.jumlah
-      : acc - t.jumlah;
-  }, 0);
+  return (
+    <div style={container}>
+      <h1>📊 Laporan</h1>
 
-  const totalMasuk = transaksi
-    .filter(t => t.tipe === "masuk")
-    .reduce((a, b) => a + b.jumlah, 0);
+      <Link href="/">
+        <button style={btn}>⬅ Kembali</button>
+      </Link>
+
+      <div style={card}>
+        <p>Total Masuk: Rp {totalMasuk}</p>
+        <p>Total Keluar: Rp {totalKeluar}</p>
+        <p>Saldo: Rp {totalMasuk - totalKeluar}</p>
+      </div>
+    </div>
+  );
+}
+
+const container = {
+  background: "#0f172a",
+  color: "white",
+  minHeight: "100vh",
+  padding: 20
+};
+
+const card = {
+  background: "#1e293b",
+  padding: 20,
+  borderRadius: 10,
+  marginTop: 20
+};
+
+const btn = {
+  padding: 10,
+  background: "#3b82f6",
+  border: "none",
+  borderRadius: 8,
+  color: "white"
+};    .reduce((a, b) => a + b.jumlah, 0);
 
   const totalKeluar = transaksi
     .filter(t => t.tipe === "keluar")
