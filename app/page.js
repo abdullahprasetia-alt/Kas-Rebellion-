@@ -6,6 +6,7 @@ export default function Home() {
   const [nama, setNama] = useState("");
   const [jumlah, setJumlah] = useState("");
   const [tipe, setTipe] = useState("masuk");
+  const [keterangan, setKeterangan] = useState("");
 
   const tambah = () => {
     if (!nama || !jumlah) return;
@@ -14,12 +15,14 @@ export default function Home() {
       nama,
       jumlah: Number(jumlah),
       tipe,
+      keterangan,
       tanggal: new Date().toLocaleString()
     };
 
     setTransaksi([data, ...transaksi]);
     setNama("");
     setJumlah("");
+    setKeterangan("");
   };
 
   const saldo = transaksi.reduce((acc, t) => {
@@ -28,31 +31,144 @@ export default function Home() {
       : acc - t.jumlah;
   }, 0);
 
+  const totalMasuk = transaksi
+    .filter(t => t.tipe === "masuk")
+    .reduce((a, b) => a + b.jumlah, 0);
+
+  const totalKeluar = transaksi
+    .filter(t => t.tipe === "keluar")
+    .reduce((a, b) => a + b.jumlah, 0);
+
   return (
-    <div style={{ padding: 20 }}>
-      <h1>💰 Kas Kelompok</h1>
-      <h2>Saldo: Rp {saldo}</h2>
+    <div style={{
+      minHeight: "100vh",
+      background: "#0f172a",
+      color: "white",
+      padding: 20,
+      fontFamily: "Arial"
+    }}>
+      <h1 style={{ textAlign: "center" }}>💰 Kas Kelompok</h1>
 
-      <input placeholder="Nama" onChange={e => setNama(e.target.value)} />
-      <br />
-      <input type="number" placeholder="Jumlah" onChange={e => setJumlah(e.target.value)} />
-      <br />
-
-      <select onChange={e => setTipe(e.target.value)}>
-        <option value="masuk">Pemasukan</option>
-        <option value="keluar">Pengeluaran</option>
-      </select>
-
-      <br /><br />
-      <button onClick={tambah}>Tambah</button>
-
-      <hr />
-
-      {transaksi.map((t, i) => (
-        <div key={i}>
-          {t.nama} - {t.tipe} - Rp {t.jumlah}
+      {/* DASHBOARD */}
+      <div style={{
+        display: "flex",
+        gap: 10,
+        marginTop: 20,
+        flexWrap: "wrap"
+      }}>
+        <div style={boxStyle("#22c55e")}>
+          <p>Saldo</p>
+          <h2>Rp {saldo}</h2>
         </div>
-      ))}
+
+        <div style={boxStyle("#3b82f6")}>
+          <p>Pemasukan</p>
+          <h2>Rp {totalMasuk}</h2>
+        </div>
+
+        <div style={boxStyle("#ef4444")}>
+          <p>Pengeluaran</p>
+          <h2>Rp {totalKeluar}</h2>
+        </div>
+      </div>
+
+      {/* FORM */}
+      <div style={card}>
+        <h3>Tambah Transaksi</h3>
+
+        <input
+          style={input}
+          placeholder="Nama"
+          value={nama}
+          onChange={e => setNama(e.target.value)}
+        />
+
+        <input
+          style={input}
+          type="number"
+          placeholder="Jumlah"
+          value={jumlah}
+          onChange={e => setJumlah(e.target.value)}
+        />
+
+        <input
+          style={input}
+          placeholder="Keterangan"
+          value={keterangan}
+          onChange={e => setKeterangan(e.target.value)}
+        />
+
+        <select style={input} value={tipe} onChange={e => setTipe(e.target.value)}>
+          <option value="masuk">Pemasukan</option>
+          <option value="keluar">Pengeluaran</option>
+        </select>
+
+        <button style={button} onClick={tambah}>
+          Tambah
+        </button>
+      </div>
+
+      {/* RIWAYAT */}
+      <div style={card}>
+        <h3>📜 Riwayat Transaksi</h3>
+
+        {transaksi.length === 0 && <p>Belum ada transaksi</p>}
+
+        {transaksi.map((t, i) => (
+          <div key={i} style={{
+            padding: 10,
+            marginBottom: 10,
+            background: "#1e293b",
+            borderRadius: 10
+          }}>
+            <b>{t.nama}</b> - 
+            <span style={{
+              color: t.tipe === "masuk" ? "#22c55e" : "#ef4444"
+            }}>
+              {" "}{t.tipe.toUpperCase()}
+            </span>
+            <br />
+            Rp {t.jumlah}
+            <br />
+            <small>{t.keterangan}</small>
+            <br />
+            <small>{t.tanggal}</small>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
+
+const boxStyle = (color) => ({
+  flex: 1,
+  background: "#1e293b",
+  padding: 15,
+  borderRadius: 12,
+  borderLeft: `5px solid ${color}`
+});
+
+const card = {
+  marginTop: 20,
+  background: "#1e293b",
+  padding: 20,
+  borderRadius: 12
+};
+
+const input = {
+  width: "100%",
+  padding: 10,
+  marginBottom: 10,
+  borderRadius: 8,
+  border: "none"
+};
+
+const button = {
+  width: "100%",
+  padding: 12,
+  background: "#22c55e",
+  border: "none",
+  borderRadius: 8,
+  color: "white",
+  fontWeight: "bold"
+};
